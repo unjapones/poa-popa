@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.24;
 
 import "./EthereumClaimsRegistryInterface.sol";
 import "./PhysicalAddressClaim.sol";
@@ -26,8 +26,7 @@ contract ProofOfPhysicalAddress {
         bytes32 confirmationCodeSha3;
     }
 
-    function ProofOfPhysicalAddress(address _registry) public
-    {
+    constructor(address _registry) public {
         owner = msg.sender;
         signer = owner;
         registry = EthereumClaimsRegistryInterface(_registry);

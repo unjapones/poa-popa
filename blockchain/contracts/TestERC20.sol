@@ -1,4 +1,4 @@
-pragma solidity 0.4.19;
+pragma solidity 0.4.24;
 
 import "./ERC20.sol";
 
@@ -40,7 +40,7 @@ contract TestERC20 is ERC20 {
         tokens;
         return false;
     }
-    
+
     function transferFrom(address from, address to, uint tokens) public returns (bool success) {
         from;
         to;

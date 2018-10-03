@@ -5,6 +5,7 @@ import * as log from 'loglevel';
 
 import {Loading} from './Loading';
 import BackButton from './BackButton';
+import AddClaimToMyIdentity from './AddClaimToMyIdentity';
 import waitForTransaction from '../waitForTransaction';
 
 import '../assets/javascripts/show-alert.js';
@@ -156,6 +157,11 @@ class ConfirmationPage extends React.Component {
                                             <i className="fa fa-trash"></i>
                                         </a>
                                     </div>
+                                    { !confirmed ? null : (
+                                    <div className="wrap-btn">
+                                      <AddClaimToMyIdentity wallet={this.state.wallet} web3={this.props.my_web3}/>
+                                    </div>
+                                    ) }
                                 </div>
                             )) }
                     </div>
