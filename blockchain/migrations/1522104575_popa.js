@@ -4,6 +4,7 @@ var EthereumClaimsRegistry = artifacts.require('EthereumClaimsRegistry');
 var TestERC20 = artifacts.require('TestERC20');
 var POPAClaimHolder = artifacts.require('ProofOfPhysicalAddressClaimHolder');
 var UserClaimHolder = artifacts.require('UserClaimHolder');
+var ClaimVerifier = artifacts.require('ClaimVerifier');
 
 module.exports = function(deployer, network, accounts) {
     return deployer.then(async () => {
@@ -40,5 +41,7 @@ module.exports = function(deployer, network, accounts) {
         // use the corresponding address from the terminal output.
         // Also, use "truffle deploy --network development" for the deployment.
         await deployer.deploy(UserClaimHolder, { from: accounts[4] });
+        // Deploy a 3rd party Claim verifier to check the corresponding claim
+        await deployer.deploy(ClaimVerifier, { from: accounts[6] });
     });
 };

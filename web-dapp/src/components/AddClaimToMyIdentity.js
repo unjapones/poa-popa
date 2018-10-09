@@ -67,6 +67,7 @@ class AddClaimToMyIdentity extends React.Component {
 
       let myIdentityContract = web3.eth.contract(CLAIMHOLDERABI);
       let myIdentityContractInstance = myIdentityContract.at(identityContractAddress);
+      console.log(`identityContractAddress: ${identityContractAddress}`)
 
       window.$.ajax({
           type: 'post',
@@ -75,6 +76,7 @@ class AddClaimToMyIdentity extends React.Component {
               wallet,
               // @TODO: should probably pass the keccak id instead
               addressIndex: 0,
+              destinationClaimHolderAddress: identityContractAddress
           },
           success: (res) => {
             // NOTE: addClaimABI could be constructed on the server side,
@@ -86,7 +88,7 @@ class AddClaimToMyIdentity extends React.Component {
                 CLAIM_SCHEMES_ECDSA,
                 res.issuerAddress,
                 res.signature,
-                res.hexedData,
+                res.data,
                 res.uri,
             )
             // We are going to send a transaction to invoke the "execute" method

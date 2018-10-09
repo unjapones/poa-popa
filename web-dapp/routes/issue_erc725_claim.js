@@ -6,6 +6,9 @@ const config = require('../server-config');
 const sendResponse = require('../server-lib/send_response');
 const issueErc725ClaimController = require('../controllers/issueErc725Claim');
 
+const sign = require('../server-lib/sign');
+const signerPrivateKey = config.signerPrivateKey;
+
 const web3 = config.web3;
 
 // const KEY_PURPOSES = {
@@ -18,9 +21,10 @@ const web3 = config.web3;
 // const CLAIM_SCHEMES = {
 //     'ECDSA' : 1,
 // };
-const CLAIM_TYPES = {
-    'KYC' : 7,
-};
+// const CLAIM_TYPES = {
+//     'KYC' : 7,
+// };
+const CLAIM_TYPE_KYC_UINT256 = '0x0000000000000000000000000000000000000000000000000000000000000007';
 
 module.exports = () => {
     const router = express.Router();
@@ -28,11 +32,12 @@ module.exports = () => {
         const logPrfx = req.logPrfx;
         const prelog = `[issueErc725Claim] (${logPrfx})`;
 
+        // @TODO: validate that the required data is valid
         const {wallet, addressIndex, destinationClaimHolderAddress} = req.body;
-        logger.log(`[issueErc725Claim] (req.body): ${JSON.stringify(req.body)}`);
 
         return issueErc725ClaimController.getAddressBykeccakIdentifier({wallet, addressIndex}, prelog)
             .then(async physicalAddress => {
+                // @TODO: use the keccakIdentifier generated in the PoPA contract
                 let physicalAddressText = [
                     physicalAddress.country,
                     physicalAddress.state,
@@ -40,24 +45,24 @@ module.exports = () => {
                     physicalAddress.location,
                     physicalAddress.zip,
                 ].join(',');
-                logger.log(`[physicalAddressText]: ${JSON.stringify(physicalAddressText)}`);
+                let physicalAddressTextSha3 = web3.sha3(physicalAddressText);
 
-                // Using methods from web3 prior version 1
-                let hexedData = web3.fromAscii(physicalAddressText);
-                let hashedDataToSign = web3.sha3(
-                    destinationClaimHolderAddress,
-                    CLAIM_TYPES.KYC,
-                    hexedData,
-                );
-                let signature = await web3.eth.sign(config.signer, hashedDataToSign);
-                logger.log(`[hexedData]: ${hexedData}`);
-                logger.log(`[hashedDataToSign (destinationClaimHolderAddress, CLAIMTYPE.KYC, hexedData)]: ${JSON.stringify(hashedDataToSign)}`);
-                logger.log(`[signature]: ${JSON.stringify(signature)}`);
+                let dataToHash = Buffer.concat([
+                    Buffer.from(destinationClaimHolderAddress.substr(2), 'hex'),
+                    Buffer.from(CLAIM_TYPE_KYC_UINT256.substr(2), 'hex'),
+                    Buffer.from(physicalAddressTextSha3.substr(2), 'hex'),
+                ]).toString('hex');
+                logger.log(`dataToHash: ${dataToHash}`);
+
+                const { sig, dataHashed } = sign(dataToHash, signerPrivateKey);
+                const signature = '0x' + sig;
+                logger.log(`signature: ${signature}`);
+                logger.log(`dataHashed: ${dataHashed}`);
 
                 return sendResponse(res, {
                     ok: true,
                     signature,
-                    hexedData,
+                    data: physicalAddressTextSha3,
                     issuerAddress: config.cconf.PoPAClaimHolderAddress,
                     uri: 'http://popa.poa.network',
                 });
