@@ -1,5 +1,6 @@
 {
-   "extends": "default",
-   "rules": {
-   }
- }
+  "extends": "default",
+  "rules": {
+    "avoid-call-value": "warn"
+  }
+}
